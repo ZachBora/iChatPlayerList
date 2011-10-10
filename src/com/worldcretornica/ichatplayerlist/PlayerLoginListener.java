@@ -38,7 +38,10 @@ public class PlayerLoginListener extends PlayerListener {
 				String fixedname = ((iChat) plugin.ichatplugin).API.addColor(coloredname);
 				
 				player.setDisplayName(fixedname);
-				player.setPlayerListName(fixedname);
+				if (fixedname.length()>16)
+					player.setPlayerListName(fixedname.substring(0, 14) + "..");
+				else
+					player.setPlayerListName(fixedname);
 			}
 		}
 		super.onPlayerJoin(event);
