@@ -1,0 +1,6 @@
+name: iChatPlayerList
+main: com.worldcretornica.ichatplayerlist.iChatPlayerList
+version: 1.0
+description: >
+             Using iChat's API, color the player displayname and playerlist name
+commands:
