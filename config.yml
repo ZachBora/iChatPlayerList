@@ -1,0 +1,12 @@
+OPSymbol: '*'
+CreativeSymbol: '~'
+SurvivalSymbol: '!'
+ShowBothStatus: false
+TooLongTabNameSymbol: '..'
+ShowInTAB: true
+TabFormat: '$OP$CREATIVE$LASTCOLORPREFIX$NAME'
+ShowInDisplayName: true
+DisplayNameFormat: '$LASTCOLORPREFIX$NAME'
+ShowInOverhead: true
+OverheadFormat: '$LASTCOLORPREFIX$NAME'
+ColorNamesInChat: true

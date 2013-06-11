@@ -1,14 +1,19 @@
 package com.worldcretornica.ichatplayerlist;
 
+import me.javoris767.supachat.SupaChat;
 import net.TheDgtl.iChat.iChat;
 
-import org.bukkit.GameMode;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerListener;
 
-public class PlayerLoginListener extends PlayerListener {
+public class PlayerLoginListener implements Listener
+{
 
 	public static iChatPlayerList plugin;
 	
@@ -17,96 +22,96 @@ public class PlayerLoginListener extends PlayerListener {
 		plugin = instance;
 	}
 	
-	@Override
-	public void onPlayerChat(PlayerChatEvent event) {
-		
-		Player player = event.getPlayer();
-		addPlayerToList(player);				
-		
-		super.onPlayerChat(event);
-	}
 	
-	@Override
-	public void onPlayerJoin(PlayerJoinEvent event) {
-		
-		Player player = event.getPlayer();
-		addPlayerToList(player);
-		
-		super.onPlayerJoin(event);
-	}
-	
-	
-	public void addPlayerToList(Player player)
+	@EventHandler(priority = EventPriority.HIGH)
+	public void onPlayerChatSetTab(final AsyncPlayerChatEvent event)
 	{
-		((iChat) plugin.ichatplugin).info.addPlayer(player);
+		Player player = event.getPlayer();
 		
-		if(((iChat) plugin.ichatplugin).info.getKey(player, "prefix") == null)
+		if(event.isAsynchronous())
+			plugin.getServer().getScheduler().callSyncMethod(plugin, new CallableAddPlayerToList(player, plugin));
+		else
+			plugin.addPlayerToList(player);
+	}
+	
+	
+	@EventHandler
+	public void onPlayerChangedWorld(final PlayerChangedWorldEvent event)
+	{
+		plugin.addPlayerToList(event.getPlayer());
+	}
+	
+	
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onPlayerChat(final AsyncPlayerChatEvent event)
+	{
+		if(plugin.ColorNamesInChat)
 		{
-			plugin.logger.severe("Unable to get prefix");
-		}else{
-			String prefix = ((iChat) plugin.ichatplugin).info.getKey(player, "prefix");
-			
-			if(prefix.lastIndexOf("&") != -1)
+			for(Player p : Bukkit.getOnlinePlayers())
 			{
-				int lastcolor = prefix.lastIndexOf("&");
-				
-				String coloredname = "&" + prefix.charAt(lastcolor + 1) + player.getName();
-				String tabname = coloredname;
-				
-				if(plugin.mainconfig.getBoolean("ShowInTAB"))
+				if(event.getPlayer().canSee(p))
 				{
-					tabname = checkOP(tabname, player);
-					tabname = ((iChat) plugin.ichatplugin).API.addColor(tabname);
-					if (tabname.length()>16)
-						player.setPlayerListName(tabname.substring(0, 14) + "..");
+					String Prefix = "";
+					String Suffix = "";
+					int lastcolor = 0;
+					String LastColorPrefix = "";
+					String LastColorSuffix = "";
+					
+					if (plugin.ichatplugin != null)
+					{
+						((iChat) plugin.ichatplugin).info.addPlayer(p);
+						
+						if(((iChat) plugin.ichatplugin).info.getKey(p, "prefix") == null)
+						{
+							return;
+						}else{
+							Prefix = ((iChat) plugin.ichatplugin).info.getKey(p, "prefix");
+							Suffix = ((iChat) plugin.ichatplugin).info.getKey(event.getPlayer(), "suffix");
+						}
+					}else if (plugin.supachatplugin != null)
+					{
+						((SupaChat) plugin.supachatplugin).info.addPlayer(p);
+						
+						if(((SupaChat) plugin.supachatplugin).info.getKey(p, "prefix") == null)
+						{
+							return;
+						}else{
+							Prefix = ((SupaChat) plugin.supachatplugin).info.getKey(p, "prefix");
+							Suffix = ((SupaChat) plugin.supachatplugin).info.getKey(event.getPlayer(), "suffix");
+						}
+					}else if (plugin.PEXManager != null)
+					{
+						Prefix = plugin.PEXManager.getUser(p).getPrefix();
+						Suffix = plugin.PEXManager.getUser(event.getPlayer()).getSuffix();
+					}
+
+					
+					lastcolor = Prefix.lastIndexOf("&");
+					if(lastcolor >= 0)
+					{
+						LastColorPrefix = "&" + Prefix.charAt(lastcolor + 1);
+					}
+					
+					lastcolor = Suffix.lastIndexOf("&");
+					if(lastcolor >= 0)
+					{
+						LastColorSuffix = "&" + Suffix.charAt(lastcolor + 1);
+					}
 					else
-						player.setPlayerListName(tabname);
+					{
+						LastColorSuffix = "&f";
+					}
+					
+					event.setMessage(event.getMessage().replaceAll("(?i)" + p.getName(), plugin.addColor(LastColorPrefix + p.getName() + LastColorSuffix)));
 				}
-				if(plugin.mainconfig.getBoolean("ShowInDisplayName"))
-				{
-					coloredname = checkOP(coloredname, player);
-					coloredname = ((iChat) plugin.ichatplugin).API.addColor(coloredname);
-					player.setDisplayName(coloredname);
-				}				
 			}
 		}
 	}
 	
-	public String checkOP(String name, Player player)
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onPlayerJoin(final PlayerJoinEvent event)
 	{
-		if(plugin.mainconfig.getBoolean("ShowStatusOP"))
-		{
-			if(player.isOp())
-			{
-				name = plugin.mainconfig.getString("OPSymbol") + name;
-				
-				if(plugin.mainconfig.getBoolean("ShowBothStatus"))
-				{
-					name = checkCreative(name, player);
-				}
-			}else{
-				name = checkCreative(name, player);
-			}
-			
-			return name;
-		}else{
-			return checkCreative(name, player);
-		}
-	}
-	
-	public String checkCreative(String name, Player player)
-	{
-		if(plugin.mainconfig.getBoolean("ShowStatusCreative"))
-		{
-			if(player.getGameMode() == GameMode.CREATIVE)
-			{
-				name = plugin.mainconfig.getString("CreativeSymbol") + name;
-			}
-			
-			return name;
-		}else{
-			return name;
-		}
-	}
-	
+		Player player = event.getPlayer();
+		plugin.addPlayerToList(player);
+	}	
 }

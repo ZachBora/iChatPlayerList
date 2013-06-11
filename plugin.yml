@@ -1,6 +1,10 @@
 name: iChatPlayerList
 main: com.worldcretornica.ichatplayerlist.iChatPlayerList
-version: 0.2
+version: 0.8
+softdepend: [iChat, PermissionsEX, TagAPI, SupaChat]
 description: >
-             Using iChat's API, color the player displayname and playerlist name
+             Using iChat, SupaChat or PEX, color the player displayname and playerlist name
 commands:
+    ichatplayerlist:
+        description: Reloads ichat configuration
+        usage: /ichatplayerlist reload
