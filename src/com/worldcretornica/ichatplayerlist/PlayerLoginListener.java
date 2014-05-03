@@ -11,7 +11,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
+@SuppressWarnings("unused")
 public class PlayerLoginListener implements Listener
 {
 
@@ -113,5 +115,21 @@ public class PlayerLoginListener implements Listener
 	{
 		Player player = event.getPlayer();
 		plugin.addPlayerToList(player);
-	}	
+		
+		/*Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
+            public void run(){
+                plugin.updateTabListByRank();
+            }
+        }, 3);*/
+	}
+	/*
+	@EventHandler(ignoreCancelled=true)
+	public void onPlayerQuit(final PlayerQuitEvent event)
+	{
+	    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
+            public void run(){
+                plugin.updateTabListByRank();
+            }
+        }, 3);
+	}*/
 }
